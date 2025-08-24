@@ -10,22 +10,22 @@ return new class extends Migration
      * Run the migrations.
      */
     public function up(): void
-    {
+      {
+         
+        // First drop the foreign key from appointments
         Schema::table('appointments', function (Blueprint $table) {
-$table->unsignedBigInteger('patient_id');
-$table->foreign('patient_id')->references('id')->on('patient')->onDelete('cascade');
-
-            //
+            $table->dropForeign(['patient_id']); // remove FK constraint
+            $table->foreign('patient_id')->references('id')->on('users')->onDelete('cascade');
         });
+        Schema::dropIfExists('patient');
+             
     }
 
-    /**
+    /**x
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::table('appointments', function (Blueprint $table) {
-            //
-        });
+        //
     }
 };
