@@ -62,8 +62,10 @@ class DoctorSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+        
         ]);
         
         $this->command->info('Doctors seed data inserted successfully!');
+        
     }
 }

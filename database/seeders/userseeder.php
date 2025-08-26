@@ -61,6 +61,6 @@ class UserSeeder extends Seeder
             ],
         ]);
         
-        $this->command->info('User seed data inserted successfully!');
+        // $this->command->info('User seed data inserted successfully!');
     }
 }
