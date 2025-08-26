@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Doctor;
 use Illuminate\Http\Request;
 
 class AdminController extends Controller
@@ -13,8 +14,9 @@ class AdminController extends Controller
 
     public function doctors()
     {
-        return view('admin.doctors');
-    }
+        $doctors = Doctor::all(); 
+        return view('admin.doctors', compact('doctors'));   
+     }
 
 
 
