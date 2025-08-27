@@ -10,7 +10,7 @@ class AdminController extends Controller
 {
     public function index()
     {
-        return view('adminDashboard'); // موجود مباشرة في views
+        return view('adminDashboard');
     }
 
     // Duplicate doctors() method removed to fix redeclaration error.
