@@ -52,6 +52,15 @@ public function isAdmin()
     return $this->is_admin;
 }
 
+public function appointmentsAsDoctor()
+{
+    return $this->hasMany(\App\Models\Appointment::class, 'doctor_id');
+}
+
+public function appointmentsAsPatient()
+{
+    return $this->hasMany(\App\Models\Appointment::class, 'patient_id');
+}
 
 
 }

@@ -10,9 +10,24 @@ return new class extends Migration
     {
         Schema::create('appointments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('doctor_id')->constrained('doctors')->onDelete('cascade');
-            $table->foreignId('patient_id')->constrained('users')->onDelete('cascade');
-            $table->dateTime('appointment_date');
+
+            // Doctor reference
+            $table->foreignId('doctor_id')
+                  ->constrained('doctors')
+                  ->onDelete('cascade');
+
+            // Patient reference (from users table)
+            $table->foreignId('patient_id')
+                  ->constrained('users')
+                  ->onDelete('cascade');
+
+            // Appointment date and time
+            $table->date('appointment_date');
+            $table->time('appointment_time');
+
+            // Status of appointment
+            $table->enum('status', ['scheduled', 'cancelled'])->default('scheduled');
+
             $table->timestamps();
         });
     }

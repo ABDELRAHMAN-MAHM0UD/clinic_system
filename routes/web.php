@@ -42,6 +42,12 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     // Appointments
     Route::get('/appointments', [AdminController::class, 'appointments'])->name(name: 'admin.appointments');
 
+    //Appointments
+    Route::get('/appointments', [AdminController::class, 'appointments'])->name('admin.appointments');
+    Route::get('/appointments/{appointment}/edit', [AdminController::class, 'appointmentsEdit'])->name('admin.appointments.edit');
+    Route::put('/appointments/{appointment}', [AdminController::class, 'appointmentsUpdate'])->name('admin.appointments.update');
+    Route::delete('/appointments/{appointment}', [AdminController::class, 'appointmentsDestroy'])->name('admin.appointments.destroy');
+
 });
 
 // ==================================
@@ -65,6 +71,12 @@ Route::prefix('patient')->middleware(['auth', 'verified'])->group(function () {
 
     // medical history
         Route::get('/medical_history', [PatientController::class, 'medicalHis'])->name(name: 'patient.medical_history');
+
+    //Appointments
+    Route::get('/appointments', [PatientController::class, 'appointments'])->name('patient.appointments'); // list + book form
+    Route::get('/appointments/available', [PatientController::class, 'availableSlots'])->name('patient.appointments.available'); // JSON slots
+    Route::post('/appointments', [PatientController::class, 'appointmentsStore'])->name('patient.appointments.store');
+    Route::delete('/appointments/{appointment}', [PatientController::class, 'appointmentsCancel'])->name('patient.appointments.cancel');
 
 });
 
