@@ -73,12 +73,13 @@ public function storeDoctor(Request $request)
 public function appointments()
 {
     $appointments = Appointment::with(['doctor', 'patient'])
-        //->where('doctor_id', Auth::id())   // ensures doctor only sees their own appointments
         ->orderBy('appointment_date')
         ->orderBy('appointment_time')
         ->paginate(10);
 
-    return view('admin.appointments', compact('appointments'));
+    $doctors = Doctor::all(); // ✅ fetch real doctors for the dropdown
+
+    return view('admin.appointments', compact('appointments', 'doctors'));
 }
 
 

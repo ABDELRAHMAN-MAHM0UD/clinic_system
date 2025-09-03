@@ -26,7 +26,8 @@ return new class extends Migration
             $table->time('appointment_time');
 
             // Status of appointment
-            $table->enum('status', ['scheduled', 'cancelled'])->default('scheduled');
+            $table->enum('status', ['pending', 'confirmed', 'completed', 'cancelled'])->default('pending');
+
 
             $table->timestamps();
         });

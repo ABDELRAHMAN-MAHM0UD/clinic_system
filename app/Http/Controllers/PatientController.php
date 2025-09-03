@@ -42,7 +42,7 @@ class PatientController extends Controller
 
 public function appointments()
 {
-    $doctors = User::where('is_admin', 1)->get();
+    $doctors = Doctor::all();
 
     $myAppointments = Appointment::with('doctor')
         ->where('patient_id', Auth::id())
