@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Doctor;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use App\Models\Appointment;
+use Illuminate\Support\Facades\Auth;
+
 
 class AdminController extends Controller
 {
@@ -27,11 +30,7 @@ class AdminController extends Controller
         return view('admin.invoices');
     }
 
-    public function appointments()
-    {
-        return view('admin.appointments');
-    }
-
+    
     public function doctors()
 {
     $doctors = Doctor::all(); 
@@ -69,5 +68,60 @@ public function storeDoctor(Request $request)
 
     return redirect()->route('admin.doctors')->with('success', 'Doctor added successfully.');
 }
+  
+    //Appointments
+public function appointments()
+{
+    $appointments = Appointment::with(['doctor', 'patient'])
+        ->orderBy('appointment_date')
+        ->orderBy('appointment_time')
+        ->paginate(10);
+
+    $doctors = Doctor::all(); // ✅ fetch real doctors for the dropdown
+
+    return view('admin.appointments', compact('appointments', 'doctors'));
+}
+
+
+public function appointmentsEdit(Appointment $appointment)
+{
+    abort_unless($appointment->doctor_id === Auth::id(), 403);
+    return view('admin.appointments_edit', compact('appointment'));
+}
+
+public function appointmentsUpdate(Request $request, Appointment $appointment)
+{
+    abort_unless($appointment->doctor_id === Auth::id(), 403);
+
+    $data = $request->validate([
+        'appointment_date' => 'required|date|after_or_equal:today',
+        'appointment_time' => 'required',
+        'status'           => 'required|in:pending,confirmed,completed,cancelled',
+    ]);
+
+    // prevent collision with another appointment
+    $exists = Appointment::where('doctor_id', $appointment->doctor_id)
+        ->where('appointment_date', $data['appointment_date'])
+        ->where('appointment_time', $data['appointment_time'])
+        ->where('id', '!=', $appointment->id)
+        ->where('status', '!=', 'cancelled')
+        ->exists();
+
+    if ($exists) {
+        return back()->withErrors(['appointment_time' => 'This slot is already booked.'])->withInput();
+    }
+
+    $appointment->update($data);
+
+    return redirect()->route('admin.appointments')->with('success', 'Appointment updated!');
+}
+
+public function appointmentsDestroy(Appointment $appointment)
+{
+    abort_unless($appointment->doctor_id === Auth::id(), 403);
+    $appointment->delete();
+    return back()->with('success', 'Appointment deleted!');
+}
+
 
 }
