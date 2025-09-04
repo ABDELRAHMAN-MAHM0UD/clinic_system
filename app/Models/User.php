@@ -46,21 +46,33 @@ class User extends Authenticatable
         ];
     }
 
+    /**
+     * Check if the user is an admin
+     *
+     * @return bool
+     */
+    public function isAdmin()
+    {
+        return $this->is_admin;
+    }
 
-public function isAdmin()
-{
-    return $this->is_admin;
-}
+    /**
+     * Get appointments where user is the doctor
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function appointmentsAsDoctor()
+    {
+        return $this->hasMany(\App\Models\Appointment::class, 'doctor_id');
+    }
 
-public function appointmentsAsDoctor()
-{
-    return $this->hasMany(\App\Models\Appointment::class, 'doctor_id');
-}
-
-public function appointmentsAsPatient()
-{
-    return $this->hasMany(\App\Models\Appointment::class, 'patient_id');
-}
-
-
+    /**
+     * Get appointments where user is the patient
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function appointmentsAsPatient()
+    {
+        return $this->hasMany(\App\Models\Appointment::class, 'patient_id');
+    }
 }
