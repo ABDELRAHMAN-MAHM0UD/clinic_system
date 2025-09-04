@@ -37,7 +37,7 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::get('/patients', [AdminController::class, 'patients'])->name('admin.patients');
 
     // Invoices
-    Route::get('/invoices', [AdminController::class, 'invoices'])->name('admin.invoices');
+    Route::get('/invoices', [PatientController::class, 'AdminInvoices'])->name('admin.invoices');
 
     // Appointments
     Route::get('/appointments', [AdminController::class, 'appointments'])->name(name: 'admin.appointments');
