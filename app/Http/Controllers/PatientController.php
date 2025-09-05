@@ -23,11 +23,18 @@ class PatientController extends Controller
     }
     public function medicalHis()
     {
-        return view('patient.medical_history');
+    $appointments = Appointment::with('doctor')
+        ->where('patient_id', auth()->id())
+        ->orderBy('appointment_date', 'desc')
+        ->get();
+
+    return view('patient.medical_history', compact('appointments'));
+
     }
 
 
     public function userInvoices()
+
     {
         $invoices = invoice::with('appointment.doctor')
             ->whereHas('appointment', function ($q) {
