@@ -13,7 +13,50 @@ class AdminController extends Controller
 {
     public function index()
     {
-        return view('adminDashboard');
+        $upcomingAppointments = Appointment::with(['patient', 'doctor'])
+            ->where('appointment_date', '>=', now())
+            ->orderBy('appointment_date', 'asc')
+            ->take(3)
+            ->get();
+
+        $totalPatients = DB::table('users')
+            ->where('is_admin', '=', 0)
+            ->count();
+
+        $todayAppointments = Appointment::whereDate('appointment_date', today())->count();
+        
+        $upcomingTodayAppointments = Appointment::whereDate('appointment_date', today())
+            ->where('appointment_time', '>', now()->format('H:i:s'))
+            ->where('status', '!=', 'cancelled')
+            ->count();
+
+        // Get available doctors (all active doctors)
+        $availableDoctors = Doctor::where('status', 'active')->count();
+
+        // Calculate today's revenue from completed appointments
+        $todayRevenue = DB::table('invoices')
+            ->whereDate('created_at', today())
+            ->sum('amount');
+
+        // Get previous day's revenue for comparison
+        $yesterdayRevenue = DB::table('invoices')
+            ->whereDate('created_at', today()->subDay())
+            ->sum('amount');
+
+        // Calculate percentage increase
+        $revenueIncrease = $yesterdayRevenue > 0 
+            ? round((($todayRevenue - $yesterdayRevenue) / $yesterdayRevenue) * 100)
+            : 0;
+
+        return view('adminDashboard', compact(
+            'upcomingAppointments', 
+            'totalPatients', 
+            'todayAppointments', 
+            'upcomingTodayAppointments',
+            'availableDoctors',
+            'todayRevenue',
+            'revenueIncrease'
+        ));
     }
 
     // Duplicate doctors() method removed to fix redeclaration error.
@@ -109,22 +152,21 @@ public function appointments()
 
 public function appointmentsEdit(Appointment $appointment)
 {
-    abort_unless($appointment->doctor_id === Auth::id(), 403);
-    return view('admin.appointments_edit', compact('appointment'));
+    $doctors = Doctor::all();
+    return view('admin.appointments.edit', compact('appointment', 'doctors'));
 }
 
 public function appointmentsUpdate(Request $request, Appointment $appointment)
 {
-    abort_unless($appointment->doctor_id === Auth::id(), 403);
-
     $data = $request->validate([
+        'doctor_id' => 'required|exists:doctors,id',
         'appointment_date' => 'required|date|after_or_equal:today',
         'appointment_time' => 'required',
-        'status'           => 'required|in:pending,confirmed,completed,cancelled',
+        'status' => 'required|in:pending,confirmed,completed,cancelled',
     ]);
 
     // prevent collision with another appointment
-    $exists = Appointment::where('doctor_id', $appointment->doctor_id)
+    $exists = Appointment::where('doctor_id', $data['doctor_id'])
         ->where('appointment_date', $data['appointment_date'])
         ->where('appointment_time', $data['appointment_time'])
         ->where('id', '!=', $appointment->id)
@@ -137,14 +179,13 @@ public function appointmentsUpdate(Request $request, Appointment $appointment)
 
     $appointment->update($data);
 
-    return redirect()->route('admin.appointments')->with('success', 'Appointment updated!');
+    return redirect()->route('adminDashboard')->with('success', 'Appointment updated successfully');
 }
 
 public function appointmentsDestroy(Appointment $appointment)
 {
-    abort_unless($appointment->doctor_id === Auth::id(), 403);
     $appointment->delete();
-    return back()->with('success', 'Appointment deleted!');
+    return redirect()->route('adminDashboard')->with('success', 'Appointment cancelled successfully');
 }
 
 

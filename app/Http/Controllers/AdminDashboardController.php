@@ -20,7 +20,6 @@
                 </div>
             </div>
 
-
             <!-- Navigation -->
             <nav class="px-4 pt-4">
                 <div class="space-y-2">
@@ -67,7 +66,7 @@
                         <button class="p-2 text-gray-400 hover:text-gray-600">
                             <i class="fas fa-bell"></i>
                         </button>
-                        </form>
+                        <!-- Logout button removed -->
                     </div>
                 </div>
             </header>
@@ -130,6 +129,7 @@
                                         <th class="p-4">Doctor</th>
                                         <th class="p-4">Date & Time</th>
                                         <th class="p-4">Status</th>
+                                        <th class="p-4">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
@@ -148,7 +148,8 @@
                                                 <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center mr-3">
                                                     <i class="fas fa-user-md text-green-500"></i>
                                                 </div>
-                                                <span> {{ $appointment->doctor->name }}</span>
+                                                <!-- Removed "Dr." prefix -->
+                                                <span>{{ $appointment->doctor->name }}</span>
                                             </div>
                                         </td>
                                         <td class="p-4">

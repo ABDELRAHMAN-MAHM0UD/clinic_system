@@ -32,6 +32,9 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
 
     // Admin Dashboard 
     Route::get('/admindashboard', [AdminController::class, 'index'])->name('adminDashboard');
+    Route::get('/appointments/{appointment}/edit', [AdminController::class, 'appointmentsEdit'])->name('admin.appointments.edit');
+    Route::put('/appointments/{appointment}', [AdminController::class, 'appointmentsUpdate'])->name('admin.appointments.update');
+    Route::delete('/appointments/{appointment}', [AdminController::class, 'appointmentsDestroy'])->name('admin.appointments.destroy');
 
     // Doctors
     Route::get('/doctors', [AdminController::class, 'doctors'])->name('admin.doctors');
