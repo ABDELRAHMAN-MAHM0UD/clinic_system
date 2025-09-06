@@ -30,7 +30,7 @@ Route::get('/dashboard', function () {
 Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
 
     // Admin Dashboard 
-    Route::get('/admindashboard', [AdminController::class, 'index'])->name('admindashboard');
+    Route::get('/admindashboard', [AdminController::class, 'index'])->name('adminDashboard');
 
     // Doctors
     Route::get('/doctors', [AdminController::class, 'doctors'])->name('admin.doctors');

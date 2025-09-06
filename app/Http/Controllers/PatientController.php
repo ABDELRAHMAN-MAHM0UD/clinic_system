@@ -18,27 +18,35 @@ class PatientController extends Controller
     protected $totalUnpaid;
     protected $totalCanceled;
 
-    /** Dashboard */
+    /**
+     * Dashboard
+     */
     public function index()
     {
         return view('dashboard');
     }
 
-    /** عرض الأطباء */
+    /**
+     * عرض الأطباء
+     */
     public function doctors()
     {
         $doctors = Doctor::all();
         return view('patient.doctors', compact('doctors'));
     }
 
-    /** عرض تفاصيل دكتور */
+    /**
+     * عرض تفاصيل دكتور
+     */
     public function doctorShow($id)
     {
         $doctor = Doctor::with('appointments')->findOrFail($id);
         return view('patient.showDoctorsDetails', compact('doctor'));
     }
 
-    /** عرض المواعيد الخاصة بالمستخدم */
+    /**
+     * عرض المواعيد الخاصة بالمستخدم
+     */
     public function appointments()
     {
         $doctors = Doctor::all();
@@ -52,7 +60,9 @@ class PatientController extends Controller
         return view('patient.appointments', compact('doctors', 'myAppointments'));
     }
 
-    /** فواتير المستخدم */
+    /**
+     * Display the user's invoices
+     */
     public function userInvoices()
     {
         $invoices = Invoice::with('appointment.doctor')
@@ -60,17 +70,19 @@ class PatientController extends Controller
                 $q->where('patient_id', Auth::id());
             })->get();
 
-        $totalPaid     = $invoices->where('status', 'paid')->sum('amount');
-        $totalUnpaid   = $invoices->where('status', 'unpaid')->sum('amount');
+        $totalPaid = $invoices->where('status', 'paid')->sum('amount');
+        $totalUnpaid = $invoices->where('status', 'unpaid')->sum('amount');
         $totalCanceled = $invoices->where('status', 'cancelled')->sum('amount');
 
         return view('patient.invoices', compact('invoices', 'totalPaid', 'totalUnpaid', 'totalCanceled'));
     }
 
-    /** السجل الطبي */
+    /**
+     * Display the user's medical history
+     */
     public function medicalHis()
     {
-        $appointments = Appointment::with('doctor')
+        $appointments = Appointment::with(['doctor'])
             ->where('patient_id', Auth::id())
             ->orderBy('appointment_date', 'desc')
             ->get();
@@ -78,31 +90,31 @@ class PatientController extends Controller
         return view('patient.medical_history', compact('appointments'));
     }
 
-    /** JSON: المواعيد المتاحة لدكتور في تاريخ معين */
+    /**
+     * Get available time slots for a doctor on a specific date
+     */
     public function availableSlots(Request $request)
     {
         $request->validate([
             'doctor_id' => 'required|exists:doctors,id',
-            'date'      => 'required|date|after_or_equal:today',
+            'date' => 'required|date|after_or_equal:today',
         ]);
 
         $open = Carbon::createFromTimeString('09:00:00');
         $close = Carbon::createFromTimeString('17:00:00');
-        $stepMinutes = 30;
+        $step = 30; // minutes
 
         $booked = Appointment::where('doctor_id', $request->doctor_id)
             ->where('appointment_date', $request->date)
             ->where('status', '!=', 'cancelled')
             ->pluck('appointment_time')
-            ->map(function ($t) {
-                return Carbon::parse($t)->format('H:i');
-            })
+            ->map(fn($t) => Carbon::parse($t)->format('H:i'))
             ->toArray();
 
         $slots = [];
-        for ($t = $open->copy(); $t < $close; $t->addMinutes($stepMinutes)) {
+        for ($t = $open->copy(); $t < $close; $t->addMinutes($step)) {
             $time = $t->format('H:i');
-            if (!in_array($time, $booked, true)) {
+            if (!in_array($time, $booked)) {
                 $slots[] = $time;
             }
         }
@@ -110,16 +122,17 @@ class PatientController extends Controller
         return response()->json($slots);
     }
 
-    /** حجز موعد جديد + إنشاء فاتورة + إرسال إيميل تأكيد */
+    /**
+     * حجز موعد جديد مع إرسال الإيميل
+     */
     public function appointmentsStore(Request $request)
     {
         $data = $request->validate([
-            'doctor_id'        => 'required|exists:doctors,id',
+            'doctor_id'        => 'required|exists:users,id',
             'appointment_date' => 'required|date|after_or_equal:today',
             'appointment_time' => 'required',
         ]);
 
-        // منع الحجز المكرر لنفس الدكتور/الوقت
         $exists = Appointment::where('doctor_id', $data['doctor_id'])
             ->where('appointment_date', $data['appointment_date'])
             ->where('appointment_time', $data['appointment_time'])
@@ -127,9 +140,7 @@ class PatientController extends Controller
             ->exists();
 
         if ($exists) {
-            return back()
-                ->withErrors(['appointment_time' => 'This slot is already booked.'])
-                ->withInput();
+            return back()->withErrors(['appointment_time' => 'This slot is already booked.'])->withInput();
         }
 
         $appointment = Appointment::create([
@@ -140,38 +151,38 @@ class PatientController extends Controller
             'status'           => 'pending',
         ]);
 
-        // حالة الفاتورة حسب حالة الموعد
-        $invoiceStatus = match ($appointment->status) {
-            'confirmed', 'completed' => 'paid',
-            'cancelled'              => 'cancelled',
-            default                  => 'unpaid',
-        };
+        // Determine invoice status based on appointment status
+        switch ($appointment->status) {
+            case 'confirmed':
+            case 'completed':
+                $invoiceStatus = 'paid';
+                break;
+            case 'cancelled':
+                $invoiceStatus = 'cancelled';
+                break;
+            default:
+                $invoiceStatus = 'unpaid';
+        }
 
         // إنشاء فاتورة
         Invoice::create([
             'appointment_id' => $appointment->id,
-            'amount'         => 200,
-            'status'         => $invoiceStatus,
+            'amount' => 200,
+            'status' => $invoiceStatus
         ]);
 
-        // إرسال بريد تأكيد إن أمكن
+        // Send email with error handling
         try {
-            $appointment->load('patient', 'doctor');
+            $appointment->load('patient', 'doctor'); // Ensure relationships are loaded
 
-            if ($appointment->patient && !empty($appointment->patient->email)) {
-                Mail::to($appointment->patient->email)
-                    ->send(new AppointmentBookedMail($appointment));
-                return redirect()
-                    ->route('patient.appointments')
-                    ->with('success', 'Appointment booked successfully! A confirmation email has been sent.');
-            }
+            Mail::to($appointment->patient->email)
+                ->send(new AppointmentBookedMail($appointment));
 
             return redirect()
                 ->route('patient.appointments')
-                ->with('success', 'Appointment booked successfully!')
-                ->with('warning', 'No patient email found, so the confirmation email was not sent.');
+                ->with('success', 'Appointment booked successfully! A confirmation email has been sent.');
         } catch (\Exception $e) {
-            Log::error('Failed to send appointment confirmation email', ['error' => $e->getMessage()]);
+            Log::error('Failed to send appointment confirmation email: ' . $e->getMessage());
 
             return redirect()
                 ->route('patient.appointments')
@@ -180,7 +191,9 @@ class PatientController extends Controller
         }
     }
 
-    /** إلغاء موعد */
+    /**
+     * Cancel an appointment
+     */
     public function appointmentsCancel(Appointment $appointment)
     {
         abort_unless($appointment->patient_id === Auth::id(), 403);
@@ -189,12 +202,13 @@ class PatientController extends Controller
     }
 
     //////// ADMIN ONLY ////////
+
     public function AdminInvoices()
     {
         $invoices = Invoice::with('appointment.patient')->get();
 
-        $totalPaid     = $invoices->where('status', 'paid')->sum('amount');
-        $totalUnpaid   = $invoices->where('status', 'unpaid')->sum('amount');
+        $totalPaid = $invoices->where('status', 'paid')->sum('amount');
+        $totalUnpaid = $invoices->where('status', 'unpaid')->sum('amount');
         $totalCanceled = $invoices->where('status', 'cancelled')->sum('amount');
 
         return view('admin.invoices', compact('invoices', 'totalPaid', 'totalUnpaid', 'totalCanceled'));
