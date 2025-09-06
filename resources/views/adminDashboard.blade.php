@@ -7,7 +7,6 @@
 
     <div class="py-8">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-
             <!-- Doctors -->
             <a href="{{ route('admin.doctors') }}" 
                class="block border border-blue-200 rounded-xl shadow hover:shadow-lg transition p-4 text-center h-48">
@@ -61,7 +60,6 @@
                     <p class="text-white-600 text-sm">Schedule and view appointments</p>
                 </div>
             </a>
-
         </div>
     </div>
 </x-app-layout>

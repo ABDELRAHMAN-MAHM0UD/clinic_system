@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Welcome to our modern healthcare clinic management system">
-    <title>Healthcare Clinic System - Welcome</title>
+    <meta name="description" content="@yield('meta_description', 'Healthcare Clinic System - Professional Healthcare Services')">
+    <title>@yield('title', 'Healthcare Clinic System')</title>
     <link rel="stylesheet" href="/css/style.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
-
-<body class="loginBody">
+<body class="static-page">
     <header class="site-header">
         <div class="header-container">
             <a href="/" class="logo">
@@ -27,20 +26,13 @@
         </div>
     </header>
 
-    <main class="main-content">
-        <div class="container">
-            <div class="welcome-text">
-                Healthcare Management System
-            </div>
-            
-            <p class="clinic-description">
-                Streamlined healthcare management for better patient care and efficient clinic operations
-            </p>
+    <main class="static-content">
+        <div class="page-header">
+            <h1>@yield('page_title')</h1>
+        </div>
 
-            <div class="button-row">
-                <a href="/login" class="btn-link">Sign In</a>
-                <a href="/register" class="btn-link" style="background: var(--accent-color)">Create Account</a>
-            </div>
+        <div class="content-container">
+            @yield('content')
         </div>
     </main>
 
