@@ -40,6 +40,8 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
 
     // Patients
     Route::get('/patients', [AdminController::class, 'patients'])->name('admin.patients');
+    Route::get('/patients/{id}/appointments', [AdminController::class, 'patientAppointments'])->name('admin.patient.appointments');
+    Route::get('/patients/{id}/medical-history', [AdminController::class, 'patientMedicalHistory'])->name('admin.patient.medical-history');
 
     // Invoices
     Route::get('/invoices', [PatientController::class, 'AdminInvoices'])->name('admin.invoices');

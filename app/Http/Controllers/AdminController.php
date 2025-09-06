@@ -22,7 +22,31 @@ class AdminController extends Controller
 
     public function patients()
     {
-        return view('admin.patients');
+        $patients = DB::table('users')
+            ->where('is_admin', '=', 0)
+            ->get();
+        return view('admin.patients', compact('patients'));
+    }
+
+    public function patientAppointments($id)
+    {
+        $appointments = Appointment::where('patient_id', $id)
+            ->with(['doctor', 'patient'])
+            ->orderBy('appointment_date', 'desc')
+            ->get();
+        $patient = DB::table('users')->find($id);
+        return view('admin.patient-appointments', compact('appointments', 'patient'));
+    }
+
+    public function patientMedicalHistory($id)
+    {
+        $appointments = Appointment::where('patient_id', $id)
+            ->where('status', 'completed')
+            ->with(['doctor'])
+            ->orderBy('appointment_date', 'desc')
+            ->get();
+        $patient = DB::table('users')->find($id);
+        return view('admin.patient-medical-history', compact('appointments', 'patient'));
     }
 
     public function invoices()
