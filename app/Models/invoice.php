@@ -9,8 +9,10 @@ class Invoice extends Model
     
     protected $fillable = ['appointment_id', 'amount', 'status'];
 
-    public function appointment()
-    {
-        return $this->belongsTo(Appointment::class);
-    }
+public function appointment()
+{
+    return $this->belongsTo(Appointment::class, 'appointment_id', 'id');
+}
+
+    
 }

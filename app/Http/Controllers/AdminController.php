@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Appointment;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Invoice; 
 
 
 class AdminController extends Controller
@@ -60,9 +61,6 @@ class AdminController extends Controller
     }
 
     // Duplicate doctors() method removed to fix redeclaration error.
-
-
-
     public function patients()
     {
         $patients = DB::table('users')
@@ -186,6 +184,38 @@ public function appointmentsDestroy(Appointment $appointment)
 {
     $appointment->delete();
     return redirect()->route('adminDashboard')->with('success', 'Appointment cancelled successfully');
+}
+
+// Confirm appointment
+public function appointmentsConfirm(Appointment $appointment)
+{
+    \DB::transaction(function () use ($appointment) {
+        // update appointment
+        $appointment->update(['status' => 'confirmed']);
+
+        // update invoice
+        Invoice::where('appointment_id', $appointment->id)
+            ->update(['status' => 'paid']);
+    });
+
+    return redirect()->route('admin.appointments')
+        ->with('success', 'Appointment confirmed and invoice marked as paid.');
+}
+
+// Cancel appointment
+public function appointmentsCancel(Appointment $appointment)
+{
+    \DB::transaction(function () use ($appointment) {
+        // update appointment
+        $appointment->update(['status' => 'cancelled']);
+
+        // update invoice
+        Invoice::where('appointment_id', $appointment->id)
+            ->update(['status' => 'cancelled']);
+    });
+
+    return redirect()->route('admin.appointments')
+        ->with('success', 'Appointment cancelled and invoice marked as cancelled.');
 }
 
 
