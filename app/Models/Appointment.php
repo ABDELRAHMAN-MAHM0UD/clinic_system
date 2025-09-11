@@ -23,9 +23,14 @@ class Appointment extends Model
     }
 
     public function doctor()
+    {
+        return $this->belongsTo(Doctor::class, 'doctor_id');
+    }
+
+public function invoice()
 {
-    return $this->belongsTo(Doctor::class, 'doctor_id');
+    return $this->hasOne(Invoice::class, 'appointment_id', 'id');
 }
 
-    
+
 }
