@@ -87,7 +87,7 @@ class AdminController extends Controller
             ->orderBy('appointment_date', 'desc')
             ->get();
         $patient = DB::table('users')->find($id);
-        return view('admin.patient-medical-history', compact('appointments', 'patient'));
+        return view('patient.medical_history', compact('appointments', 'patient'));
     }
 
     public function invoices()
@@ -190,7 +190,7 @@ public function appointmentsDestroy(Appointment $appointment)
 public function appointmentsConfirm(Appointment $appointment)
 {
     \DB::transaction(function () use ($appointment) {
-        // update appointment
+        
         $appointment->update(['status' => 'confirmed']);
 
         // update invoice

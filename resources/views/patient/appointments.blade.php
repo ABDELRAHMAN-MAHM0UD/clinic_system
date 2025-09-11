@@ -49,7 +49,7 @@
                 </div>
 
                 <div class="form-actions">
-                    <button class="btn btn-success">Book Appointment</button>
+                    <button class="btn btn-success">Bok Appointment</button>
                 </div>
             </form>
         </div>

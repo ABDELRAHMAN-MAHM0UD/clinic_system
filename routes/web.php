@@ -27,7 +27,7 @@ Route::get('/dashboard', function () {
 // ==================================
 // Admin Routes
 // ==================================
-Route::prefix('admin')->middleware(['auth', 'is_admin'])->group(function () {
+Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
 
     // Admin Dashboard 
     Route::get('/admindashboard', [AdminController::class, 'index'])->name('adminDashboard');

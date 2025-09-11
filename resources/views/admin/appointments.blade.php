@@ -37,7 +37,8 @@
                                 <td class="px-6 py-4">{{ $appointment->doctor->name }}</td>
                                 <td class="px-6 py-4">{{ $appointment->patient->name }}</td>
                                 <td class="px-6 py-4">{{ $appointment->appointment_date }}</td>
-                                <td class="px-6 py-4">{{ \Carbon\Carbon::parse($appointment->appointment_time)->format('H:i') }}</td>
+                                <td class="px-6 py-4">
+                                    {{ \Carbon\Carbon::parse($appointment->appointment_time)->format('H:i') }}</td>
 
                                 <!-- Status Badges -->
                                 <td class="px-6 py-4">
@@ -55,33 +56,32 @@
                                 <!-- Action Buttons -->
                                 <td class="px-6 py-4 flex gap-2 justify-center">
                                     @if($appointment->status === 'pending')
-                                <!-- Confirm button -->
-                                <form action="{{ route('appointments.confirm', $appointment) }}" method="POST">
-                                     @csrf
-                                     @method('POST')
-                                    <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md"
-                                        onclick="return confirm('Confirm this appointment?')">
-                                         Confirm
-                                    </button>
-                                </form>
+                                        <!-- Confirm button -->
+                                        <form action="{{ route('admin.appointments.confirm', $appointment->id) }}" method="POST">
+                                            @csrf
+                                            <button class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-md"
+                                                onclick="return confirm('Confirm this appointment?')">
+                                                Confirm
+                                            </button>
+                                        </form>
 
 
-                                  <!-- Cancel button -->
-                                 <form action="{{ route('admin.appointments.cancel', $appointment) }}" method="POST">
-                                      @csrf
-                                      @method('PATCH')
-                                    <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md"
-                                       onclick="return confirm('Cancel this appointment?')">
-                                       Cancel
-                                    </button>
-                                  </form>
+
+                                        <!-- Cancel button -->
+                                        <form action="{{ route('admin.appointments.cancel', $appointment) }}" method="POST">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded-md"
+                                                onclick="return confirm('Cancel this appointment?')">
+                                                Cancel
+                                            </button>
+                                        </form>
 
 
                                     @endif
 
                                     <!-- Edit button -->
-                                    <a href="{{ route('admin.appointments.edit', $appointment) }}"
-                                       class="btn btn-warning">
+                                    <a href="{{ route('admin.appointments.edit', $appointment) }}" class="btn btn-warning">
                                         Edit
                                     </a>
 
@@ -89,7 +89,7 @@
                                     <form action="{{ route('admin.appointments.destroy', $appointment) }}" method="POST">
                                         @csrf @method('DELETE')
                                         <button class="btn btn-secondary"
-                                                onclick="return confirm('Delete this appointment?')">
+                                            onclick="return confirm('Delete this appointment?')">
                                             Delete
                                         </button>
                                     </form>
