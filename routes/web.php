@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
 use App\Mail\AppointmentBookedMail;
 use App\Models\Appointment;
-use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
 
 // ==================================
 // Public / Welcome Route
@@ -32,9 +31,6 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
 
     // Admin Dashboard 
     Route::get('/admindashboard', [AdminController::class, 'index'])->name('adminDashboard');
-    Route::get('/appointments/{appointment}/edit', [AdminController::class, 'appointmentsEdit'])->name('admin.appointments.edit');
-    Route::put('/appointments/{appointment}', [AdminController::class, 'appointmentsUpdate'])->name('admin.appointments.update');
-    Route::delete('/appointments/{appointment}', [AdminController::class, 'appointmentsDestroy'])->name('admin.appointments.destroy');
 
     // Doctors
     Route::get('/doctors', [AdminController::class, 'doctors'])->name('admin.doctors');
@@ -55,6 +51,14 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::get('/appointments/{appointment}/edit', [AdminController::class, 'appointmentsEdit'])->name('admin.appointments.edit');
     Route::put('/appointments/{appointment}', [AdminController::class, 'appointmentsUpdate'])->name('admin.appointments.update');
     Route::delete('/appointments/{appointment}', [AdminController::class, 'appointmentsDestroy'])->name('admin.appointments.destroy');
+
+// ✅ Confirm appointment
+Route::post('/appointments/{appointment}/confirm', [AdminController::class, 'appointmentsConfirm'])
+    ->name('admin.appointments.confirm'); // keep as is
+
+// ✅ Cancel appointment
+Route::patch('/appointments/{appointment}/cancel', [AdminController::class, 'appointmentsCancel'])
+    ->name('admin.appointments.cancel');
 
 });
 
@@ -81,7 +85,6 @@ Route::prefix('patient')->middleware(['auth', 'verified'])->group(function () {
 
     // Medical History
     Route::get('/medical_history', [PatientController::class, 'medicalHis'])->name('patient.medical_history');
-
 });
 
 // ==================================
@@ -123,18 +126,14 @@ Route::group([], function () {
     Route::get('/contact', [StaticPagesController::class, 'contact'])->name('contact');
 });
 
+// ==================================
 // Test email route
+// ==================================
 Route::get('/test-mail', function () {
     try {
         config(['mail.mailers.smtp.verify_peer' => false]);
         config(['mail.mailers.smtp.verify_peer_name' => false]);
         
-        $debug = [];
-        $debug['config'] = config('mail');
-        
-        Log::info('Starting email test...');
-        
-        // Send test email with timestamp to avoid duplicate filtering
         $timestamp = now()->format('Y-m-d H:i:s');
         Mail::raw("Test email from clinic system at {$timestamp}", function($message) use ($timestamp) {
             $message->to('ziadelmaghraby0@gmail.com')
@@ -142,18 +141,11 @@ Route::get('/test-mail', function () {
                     ->priority(1);
         });
         
-        $debug['success'] = true;
-        $debug['time'] = $timestamp;
-        
-        Log::info('Email test completed', $debug);
-        
-        return response()->json($debug);
-    } catch (\Exception $e) {
-        Log::error('Email test failed', [
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
+        return response()->json([
+            'success' => true,
+            'time' => $timestamp,
         ]);
-        
+    } catch (\Exception $e) {
         return response()->json([
             'error' => $e->getMessage(),
             'trace' => $e->getTraceAsString(),
@@ -161,3 +153,4 @@ Route::get('/test-mail', function () {
         ], 500);
     }
 });
+

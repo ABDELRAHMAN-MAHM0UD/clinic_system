@@ -30,7 +30,7 @@
                         <div>
                             <label for="appointment_date" class="block text-sm font-medium text-gray-700">Date</label>
                             <input type="date" name="appointment_date" id="appointment_date" 
-                                value="{{ old('appointment_date', $appointment->appointment_date->format('Y-m-d')) }}"
+                        value="{{ old('appointment_date', \Carbon\Carbon::parse($appointment->appointment_date)->format('Y-m-d')) }}"
                                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
                             @error('appointment_date')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>

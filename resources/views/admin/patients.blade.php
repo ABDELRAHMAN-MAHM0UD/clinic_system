@@ -37,10 +37,7 @@
                                                    class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
                                                     View Appointments
                                                 </a>
-                                                <a href="{{ route('admin.patient.medical-history', $patient->id) }}" 
-                                                   class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300">
-                                                    Medical History
-                                                </a>
+
                                             </div>
                                         </td>
                                     </tr>
